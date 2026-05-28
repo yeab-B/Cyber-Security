@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: vulnassess-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure_postgres_password_123
+      POSTGRES_DB: vulnassess
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+    container_name: vulnassess-backend
+    environment:
+      - DATABASE_URL=postgresql://postgres:secure_postgres_password_123@db:5432/vulnassess
+      - SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+      - ALGORITHM=HS256
+      - UPLOAD_DIR=/app/uploads
+      - REPORTS_DIR=/app/reports
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_reports:/app/reports
+    depends_on:
+      - db
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vulnassess-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  postgres_data:
+  backend_uploads:
+  backend_reports:
