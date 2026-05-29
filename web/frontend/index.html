@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VulnAssess Pro — SOC Assessment Dashboard</title>
+  <link rel="icon" href="favicon.ico">
   <!-- Load Inter and Outfit Google Fonts -->
   <link rel="stylesheet" href="style.css">
   <!-- Load Lucide Icons CDN -->
@@ -12,26 +13,29 @@
     .landing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
+      gap: 1.25rem;
+      margin-top: 1.75rem;
     }
     .landing-card {
-      background: var(--color-bg-card);
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.76), rgba(17, 24, 39, 0.48));
       border: 1px solid var(--color-border);
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 1.5rem;
-      transition: all 0.3s ease;
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+      backdrop-filter: blur(14px);
+      min-height: 100%;
     }
     .landing-card:hover {
       border-color: var(--color-border-bright);
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(99, 102, 241, 0.05);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 34px rgba(99, 102, 241, 0.09);
     }
     .auth-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 18, 0.7);
-      backdrop-filter: blur(8px);
+      background: rgba(3, 7, 18, 0.74);
+      backdrop-filter: blur(10px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -46,32 +50,79 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+    @media (max-width: 1024px) {
+      .landing-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+    }
+    @media (max-width: 768px) {
+      #auth-view {
+        padding: 1rem 1rem 2rem;
+      }
+      #auth-view > header {
+        width: 100%;
+        margin-top: 0;
+        border-radius: 20px;
+        padding: 1rem 1.1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      #auth-view > header > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .landing-grid {
+        grid-template-columns: 1fr;
+      }
+      .auth-card {
+        max-width: 100%;
+        padding: 1.5rem;
+      }
+      main[style*="text-align: center"] {
+        padding: 2rem 1rem;
+      }
+    }
+    @media (max-width: 640px) {
+      #auth-view > main {
+        padding: 2rem 1rem 3rem;
+      }
+      #auth-view h1 {
+        font-size: clamp(2rem, 9vw, 3rem) !important;
+      }
+      #auth-view header > div:first-child {
+        font-size: 1rem !important;
+      }
+      #auth-view > header > div:last-child {
+        gap: 0.55rem;
+      }
+    }
   </style>
 </head>
 <body>
 
   <!-- ================= AUTH VIEW (FULLSCREEN LANDING PAGE & MODAL AUTH) ================= -->
-  <div id="auth-view" class="auth-wrapper" style="display: flex; flex-direction: column; min-height: 100vh; width: 100vw; overflow-x: hidden; position: relative; background: var(--color-bg-primary); transition: background-color 0.3s; padding-bottom: 4rem;">
+  <div id="auth-view" class="auth-wrapper" style="display: flex; flex-direction: column; min-height: 100vh; width: 100vw; overflow-x: hidden; overflow-y: auto; position: relative; background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.16), transparent 34%), radial-gradient(circle at bottom right, rgba(236, 72, 153, 0.12), transparent 30%), var(--color-bg-primary); transition: background-color 0.3s; padding-bottom: 4rem;">
     <!-- Decorative background elements -->
     <div class="auth-decor auth-decor-1"></div>
     <div class="auth-decor auth-decor-2"></div>
     
     <!-- Floating Header -->
-    <header style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; z-index: 10; flex-shrink: 0;">
+    <header style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; z-index: 10; flex-shrink: 0; backdrop-filter: blur(18px); background: rgba(3, 7, 18, 0.24); border: 1px solid rgba(99, 102, 241, 0.12); border-radius: 24px; margin-top: 1rem;">
       <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-weight: 800; font-size: 1.25rem; color: var(--color-text-primary);">
         <i data-lucide="shield" style="width: 1.5rem; height: 1.5rem; color: var(--color-accent-light);"></i>
         <span>VULNASSESS <strong style="color: var(--color-accent-light);">PRO</strong></span>
       </div>
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <button class="theme-btn" id="landing-theme-toggle" style="background: var(--color-bg-card); border: 1px solid var(--color-border-bright); border-radius: 10px; padding: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Toggle Light/Dark Mode">
+      <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.35rem; background: rgba(17, 24, 39, 0.45); border: 1px solid var(--color-border); border-radius: 999px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);">
+        <button class="theme-btn" id="landing-theme-toggle" style="background: transparent; border: 1px solid transparent; border-radius: 999px; padding: 0.55rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Toggle Light/Dark Mode">
           <i data-lucide="sun" id="landing-theme-icon" style="width: 1.1rem; height: 1.1rem; color: var(--color-text-primary);"></i>
         </button>
-        <button class="btn btn-secondary" onclick="showAuthModal('login')" style="padding: 0.5rem 1.25rem; border-radius: 10px;">Sign In</button>
+        <button class="btn btn-secondary" onclick="showAuthModal('login')" style="padding: 0.65rem 1.15rem; border-radius: 999px;">Sign In</button>
       </div>
     </header>
 
     <!-- LANDING HERO CONTENT -->
-    <main style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; text-align: center; z-index: 5;">
+    <main style="flex: 1 0 auto; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; max-width: 1000px; margin: 0 auto; padding: 4rem 2rem 3rem; text-align: center; z-index: 5;">
       <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--color-bg-elevated); border: 1px solid var(--color-border-bright); border-radius: 100px; padding: 0.35rem 1.25rem; font-size: 0.75rem; font-weight: 800; color: var(--color-accent-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2rem;">
         <span style="width: 6px; height: 6px; background: var(--color-accent-light); border-radius: 50%; display: inline-block; animation: blink 1.5s infinite;"></span> SOC-Grade Security Platform
       </div>
@@ -134,7 +185,7 @@
     <!-- AUTH OVERLAY MODAL -->
     <div id="auth-modal" class="auth-overlay">
       <!-- Login Card -->
-      <div id="login-card" class="glass-card auth-card" style="width: 100%; max-width: 400px; padding: 2.5rem; position: relative;">
+      <div id="login-card" class="glass-card auth-card" style="width: 100%; max-width: 420px; padding: 2.25rem; position: relative; border: 1px solid var(--color-border-bright); box-shadow: 0 24px 80px rgba(15, 23, 42, 0.32);">
         <button onclick="hideAuthModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; justify-content: center;"><i data-lucide="x" style="width: 1.2rem; height: 1.2rem;"></i></button>
         
         <div style="text-align: center; margin-bottom: 1.5rem;">
@@ -161,29 +212,13 @@
           </button>
         </form>
 
-        <div style="display: flex; align-items: center; text-align: center; margin: 1rem 0; color: var(--color-text-muted); font-size: 0.75rem;">
-          <div style="flex: 1; border-bottom: 1px solid var(--color-border);"></div>
-          <span style="padding: 0 0.5rem;">OR</span>
-          <div style="flex: 1; border-bottom: 1px solid var(--color-border);"></div>
-        </div>
-
-        <button type="button" id="google-login-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; border-color: var(--color-border-bright);">
-          <svg viewBox="0 0 24 24" width="16" height="16" style="fill: currentColor; flex-shrink: 0;">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-          </svg>
-          Continue with Google
-        </button>
-
         <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--color-text-secondary);">
           Need access? <span id="switch-to-register" style="color: var(--color-accent-light); cursor: pointer; font-weight: 600;">Create Account</span>
         </div>
       </div>
 
       <!-- Register Card -->
-      <div id="register-card" class="glass-card auth-card" style="display: none; width: 100%; max-width: 400px; padding: 2.5rem; position: relative;">
+      <div id="register-card" class="glass-card auth-card" style="display: none; width: 100%; max-width: 420px; padding: 2.25rem; position: relative; border: 1px solid var(--color-border-bright); box-shadow: 0 24px 80px rgba(15, 23, 42, 0.32);">
         <button onclick="hideAuthModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; cursor: pointer; color: var(--color-text-muted); display: flex; align-items: center; justify-content: center;"><i data-lucide="x" style="width: 1.2rem; height: 1.2rem;"></i></button>
 
         <div style="text-align: center; margin-bottom: 1.5rem;">
@@ -221,22 +256,6 @@
             Create Account <i data-lucide="chevron-right" style="width: 1rem; height: 1rem;"></i>
           </button>
         </form>
-
-        <div style="display: flex; align-items: center; text-align: center; margin: 1rem 0; color: var(--color-text-muted); font-size: 0.75rem;">
-          <div style="flex: 1; border-bottom: 1px solid var(--color-border);"></div>
-          <span style="padding: 0 0.5rem;">OR</span>
-          <div style="flex: 1; border-bottom: 1px solid var(--color-border);"></div>
-        </div>
-
-        <button type="button" id="google-register-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; border-color: var(--color-border-bright);">
-          <svg viewBox="0 0 24 24" width="16" height="16" style="fill: currentColor; flex-shrink: 0;">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-          </svg>
-          Continue with Google
-        </button>
 
         <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--color-text-secondary);">
           Already registered? <span id="switch-to-login" style="color: var(--color-accent-light); cursor: pointer; font-weight: 600;">Sign In</span>
