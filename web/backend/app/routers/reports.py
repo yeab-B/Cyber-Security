@@ -18,6 +18,30 @@ from app.services.report_generator import ReportGenerator
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
 
 
+def _resolve_scan_for_export(db: Session, current_user: User, item_id: str):
+    scan = (
+        db.query(Scan)
+        .filter(Scan.id == item_id, Scan.user_id == current_user.id)
+        .first()
+    )
+    if scan:
+        return scan
+
+    report = (
+        db.query(Report)
+        .filter(Report.id == item_id, Report.user_id == current_user.id)
+        .first()
+    )
+    if report:
+        return (
+            db.query(Scan)
+            .filter(Scan.id == report.scan_id, Scan.user_id == current_user.id)
+            .first()
+        )
+
+    return None
+
+
 @router.post("/generate/{scan_id}")
 async def generate_report(
     scan_id: str,
@@ -75,7 +99,7 @@ async def export_json(
     db: Session = Depends(get_db)
 ):
     """Export scan results as JSON."""
-    scan = db.query(Scan).filter(Scan.id == scan_id, Scan.user_id == current_user.id).first()
+    scan = _resolve_scan_for_export(db, current_user, scan_id)
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
 
@@ -96,7 +120,7 @@ async def export_csv(
     db: Session = Depends(get_db)
 ):
     """Export scan results as CSV."""
-    scan = db.query(Scan).filter(Scan.id == scan_id, Scan.user_id == current_user.id).first()
+    scan = _resolve_scan_for_export(db, current_user, scan_id)
     if not scan:
         raise HTTPException(status_code=404, detail="Scan not found")
 

@@ -600,7 +600,7 @@ function renderScanResult(type, result) {
       </div>
       <div style="display: flex; gap: 0.75rem;">
         <button class="btn btn-primary" onclick="compilePDFReport('${result.id}')">Compile Report</button>
-        <a class="btn btn-secondary" href="/api/reports/export/${result.id}/json" target="_blank">Export JSON</a>
+        <a class="btn btn-secondary" href="${API_BASE}/api/reports/export/${result.id}/json" target="_blank" rel="noopener noreferrer">Export JSON</a>
       </div>
     </div>
 
