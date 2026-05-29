@@ -17,54 +17,11 @@ from urllib.parse import urlparse
 import requests
 from requests.exceptions import RequestException
 from bs4 import BeautifulSoup
+from app.services.security_dataset import load_security_headers
 
 logger = logging.getLogger(__name__)
 
-# Required security headers and their descriptions
-SECURITY_HEADERS = {
-    "Strict-Transport-Security": {
-        "description": "HTTP Strict Transport Security (HSTS) header is missing",
-        "impact": "Users may be vulnerable to man-in-the-middle attacks via protocol downgrade",
-        "remediation": "Add 'Strict-Transport-Security: max-age=31536000; includeSubDomains' header",
-        "severity": "high",
-    },
-    "Content-Security-Policy": {
-        "description": "Content Security Policy (CSP) header is missing",
-        "impact": "The application may be vulnerable to Cross-Site Scripting (XSS) and data injection attacks",
-        "remediation": "Implement a Content-Security-Policy header with appropriate directives",
-        "severity": "high",
-    },
-    "X-Content-Type-Options": {
-        "description": "X-Content-Type-Options header is missing",
-        "impact": "Browser may perform MIME-type sniffing leading to security vulnerabilities",
-        "remediation": "Add 'X-Content-Type-Options: nosniff' header",
-        "severity": "medium",
-    },
-    "X-Frame-Options": {
-        "description": "X-Frame-Options header is missing",
-        "impact": "The application may be vulnerable to clickjacking attacks",
-        "remediation": "Add 'X-Frame-Options: DENY' or 'X-Frame-Options: SAMEORIGIN' header",
-        "severity": "medium",
-    },
-    "X-XSS-Protection": {
-        "description": "X-XSS-Protection header is missing",
-        "impact": "Browser XSS filter may not be enabled",
-        "remediation": "Add 'X-XSS-Protection: 1; mode=block' header",
-        "severity": "low",
-    },
-    "Referrer-Policy": {
-        "description": "Referrer-Policy header is missing",
-        "impact": "Sensitive information may be leaked through the Referer header",
-        "remediation": "Add 'Referrer-Policy: strict-origin-when-cross-origin' header",
-        "severity": "low",
-    },
-    "Permissions-Policy": {
-        "description": "Permissions-Policy header is missing",
-        "impact": "Browser features may be used without restriction by third-party content",
-        "remediation": "Add a Permissions-Policy header to control browser feature access",
-        "severity": "low",
-    },
-}
+SECURITY_HEADERS = load_security_headers()
 
 
 class WebScanner:
