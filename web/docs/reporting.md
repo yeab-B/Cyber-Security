@@ -3,6 +3,7 @@
 VulnAssess Pro can generate downloadable reports from a completed scan.
 
 ## PDF Report Flow
+
 1. The user opens a completed scan.
 2. The backend loads the scan metadata and vulnerability list.
 3. `ReportGenerator` builds a professional PDF using ReportLab.
@@ -11,6 +12,7 @@ VulnAssess Pro can generate downloadable reports from a completed scan.
 6. The user can download the PDF from the reports page.
 
 ## What the PDF contains
+
 - cover page
 - executive summary
 - risk score overview
@@ -20,12 +22,16 @@ VulnAssess Pro can generate downloadable reports from a completed scan.
 - conclusion
 
 ## Export Formats
+
 In addition to PDF, scan results can be exported as:
+
 - JSON
 - CSV
 
 ## Why this matters
+
 These outputs make the tool useful for:
+
 - security teams
 - developers
 - compliance reporting
@@ -33,7 +39,9 @@ These outputs make the tool useful for:
 - remediation tracking
 
 ## Data Stored for Reports
+
 Each report stores:
+
 - scan id
 - user id
 - title
