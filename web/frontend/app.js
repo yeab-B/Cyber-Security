@@ -1,5 +1,9 @@
 // API client configuration
-const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "http://localhost:8000" : "";
+const API_BASE =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8000"
+    : "";
 
 // State manager
 const state = {
@@ -8,7 +12,7 @@ const state = {
   activeTab: "dashboard",
   reports: [],
   dashboardStats: null,
-  expandedFindings: {}
+  expandedFindings: {},
 };
 
 // ── Theme bootstrap (runs before first paint) ──────────────────────────────
@@ -54,11 +58,12 @@ function showAuthScreen() {
 function showMainApp() {
   document.getElementById("auth-view").style.display = "none";
   document.getElementById("app-view").style.display = "flex";
-  
+
   // Set user info
   document.getElementById("nav-user-name").textContent = state.user.username;
-  document.getElementById("nav-user-role").textContent = state.user.role.toUpperCase();
-  
+  document.getElementById("nav-user-role").textContent =
+    state.user.role.toUpperCase();
+
   // Admin privileges check
   const isAdmin = state.user.role === "admin";
   const adminTabLink = document.getElementById("sidebar-admin-link");
@@ -96,21 +101,24 @@ function updateThemeIcons(theme) {
 // ── Auth Modal helpers (exposed globally for inline onclick) ─────────────────
 window.showAuthModal = function (type) {
   const modal = document.getElementById("auth-modal");
-  const loginCard  = document.getElementById("login-card");
+  const loginCard = document.getElementById("login-card");
   const registerCard = document.getElementById("register-card");
   if (!modal) return;
 
   // Clear any previous errors
-  ["login-error", "register-error"].forEach(id => {
+  ["login-error", "register-error"].forEach((id) => {
     const el = document.getElementById(id);
-    if (el) { el.style.display = "none"; el.textContent = ""; }
+    if (el) {
+      el.style.display = "none";
+      el.textContent = "";
+    }
   });
 
   if (type === "register") {
-    loginCard.style.display  = "none";
+    loginCard.style.display = "none";
     registerCard.style.display = "block";
   } else {
-    loginCard.style.display  = "block";
+    loginCard.style.display = "block";
     registerCard.style.display = "none";
   }
   modal.style.display = "flex";
@@ -138,7 +146,7 @@ function setupEventListeners() {
   }
 
   // ── Tab navigation ────────────────────────────────────────────────────────
-  document.querySelectorAll(".sidebar-link").forEach(link => {
+  document.querySelectorAll(".sidebar-link").forEach((link) => {
     link.addEventListener("click", (e) => {
       const tabName = e.currentTarget.getAttribute("data-tab");
       switchTab(tabName);
@@ -146,102 +154,130 @@ function setupEventListeners() {
   });
 
   // Auth Card Switches
-  document.getElementById("switch-to-register").addEventListener("click", () => {
-    document.getElementById("login-card").style.display = "none";
-    document.getElementById("register-card").style.display = "block";
-  });
+  document
+    .getElementById("switch-to-register")
+    .addEventListener("click", () => {
+      document.getElementById("login-card").style.display = "none";
+      document.getElementById("register-card").style.display = "block";
+    });
   document.getElementById("switch-to-login").addEventListener("click", () => {
     document.getElementById("register-card").style.display = "none";
     document.getElementById("login-card").style.display = "block";
   });
 
   // Login action handler
-  document.getElementById("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const errorDiv = document.getElementById("login-error");
-    errorDiv.style.display = "none";
-    
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value;
-    const submitBtn = e.target.querySelector("button[type=submit]");
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Authenticating..."; }
+  document
+    .getElementById("login-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errorDiv = document.getElementById("login-error");
+      errorDiv.style.display = "none";
 
-    try {
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      });
-      
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "Authentication failed");
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value;
+      const submitBtn = e.target.querySelector("button[type=submit]");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Authenticating...";
+      }
 
-      localStorage.setItem("token", data.access_token);
-      state.token = data.access_token;
-      state.user = data.user;
-      
-      window.hideAuthModal();
-      showMainApp();
-      switchTab("dashboard");
-    } catch (err) {
-      errorDiv.textContent = err.message;
-      errorDiv.style.display = "block";
-    } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Authenticate "; }
-    }
-  });
+      try {
+        const response = await fetch(`${API_BASE}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.detail || "Authentication failed");
+
+        localStorage.setItem("token", data.access_token);
+        state.token = data.access_token;
+        state.user = data.user;
+
+        window.hideAuthModal();
+        showMainApp();
+        switchTab("dashboard");
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = "block";
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Authenticate ";
+        }
+      }
+    });
 
   // Register action handler
-  document.getElementById("register-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const errorDiv = document.getElementById("register-error");
-    errorDiv.style.display = "none";
+  document
+    .getElementById("register-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const errorDiv = document.getElementById("register-error");
+      errorDiv.style.display = "none";
 
-    const fullName = document.getElementById("register-name").value.trim();
-    const email = document.getElementById("register-email").value.trim();
-    const username = document.getElementById("register-username").value.trim();
-    const password = document.getElementById("register-password").value;
-    const confirmPassword = document.getElementById("register-password-confirm").value;
-    const submitBtn = e.target.querySelector("button[type=submit]");
+      const fullName = document.getElementById("register-name").value.trim();
+      const email = document.getElementById("register-email").value.trim();
+      const username = document
+        .getElementById("register-username")
+        .value.trim();
+      const password = document.getElementById("register-password").value;
+      const confirmPassword = document.getElementById(
+        "register-password-confirm",
+      ).value;
+      const submitBtn = e.target.querySelector("button[type=submit]");
 
-    // Client-side validation
-    if (password !== confirmPassword) {
-      errorDiv.textContent = "Passwords do not match.";
-      errorDiv.style.display = "block";
-      return;
-    }
-    if (password.length < 8) {
-      errorDiv.textContent = "Password must be at least 8 characters.";
-      errorDiv.style.display = "block";
-      return;
-    }
+      // Client-side validation
+      if (password !== confirmPassword) {
+        errorDiv.textContent = "Passwords do not match.";
+        errorDiv.style.display = "block";
+        return;
+      }
+      if (password.length < 8) {
+        errorDiv.textContent = "Password must be at least 8 characters.";
+        errorDiv.style.display = "block";
+        return;
+      }
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Creating Account..."; }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Creating Account...";
+      }
 
-    try {
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password, full_name: fullName })
-      });
+      try {
+        const response = await fetch(`${API_BASE}/api/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            username,
+            password,
+            full_name: fullName,
+          }),
+        });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "Registration failed");
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.detail || "Registration failed");
 
-      localStorage.setItem("token", data.access_token);
-      state.token = data.access_token;
-      state.user = data.user;
+        localStorage.setItem("token", data.access_token);
+        state.token = data.access_token;
+        state.user = data.user;
 
-      window.hideAuthModal();
-      showMainApp();
-      switchTab("dashboard");
-    } catch (err) {
-      errorDiv.textContent = err.message;
-      errorDiv.style.display = "block";
-    } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Create Account"; }
-    }
-  });
+        window.hideAuthModal();
+        showMainApp();
+        switchTab("dashboard");
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = "block";
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create Account";
+        }
+      }
+    });
 
   // Logout handler
   document.getElementById("logout-button").addEventListener("click", () => {
@@ -253,10 +289,14 @@ function setupEventListeners() {
   });
 
   // Web scan trigger
-  document.getElementById("web-scan-form").addEventListener("submit", handleWebScan);
+  document
+    .getElementById("web-scan-form")
+    .addEventListener("submit", handleWebScan);
 
   // APK scan trigger
-  document.getElementById("apk-scan-form").addEventListener("submit", handleAPKScan);
+  document
+    .getElementById("apk-scan-form")
+    .addEventListener("submit", handleAPKScan);
 
   // APK File drag drop events
   const fileInput = document.getElementById("apk-scan-file");
@@ -268,16 +308,22 @@ function setupEventListeners() {
   });
 
   // Sync / Refresh buttons
-  document.querySelectorAll(".refresh-telemetry-btn").forEach(b => b.addEventListener("click", fetchDashboardStats));
-  document.querySelectorAll(".refresh-reports-btn").forEach(b => b.addEventListener("click", fetchReports));
-  document.querySelectorAll(".refresh-admin-btn").forEach(b => b.addEventListener("click", fetchAdminConsoleData));
+  document
+    .querySelectorAll(".refresh-telemetry-btn")
+    .forEach((b) => b.addEventListener("click", fetchDashboardStats));
+  document
+    .querySelectorAll(".refresh-reports-btn")
+    .forEach((b) => b.addEventListener("click", fetchReports));
+  document
+    .querySelectorAll(".refresh-admin-btn")
+    .forEach((b) => b.addEventListener("click", fetchAdminConsoleData));
 }
 
 // Fetch user metadata profile
 async function fetchUserProfile() {
   try {
     const response = await fetch(`${API_BASE}/api/auth/me`, {
-      headers: { "Authorization": `Bearer ${state.token}` }
+      headers: { Authorization: `Bearer ${state.token}` },
     });
     if (!response.ok) throw new Error();
     state.user = await response.json();
@@ -292,9 +338,9 @@ async function fetchUserProfile() {
 // Tab navigation handler
 function switchTab(tabName) {
   state.activeTab = tabName;
-  
+
   // Update sidebar UI links
-  document.querySelectorAll(".sidebar-link").forEach(link => {
+  document.querySelectorAll(".sidebar-link").forEach((link) => {
     if (link.getAttribute("data-tab") === tabName) {
       link.classList.add("active");
     } else {
@@ -303,7 +349,7 @@ function switchTab(tabName) {
   });
 
   // Update panels UI
-  document.querySelectorAll(".view-panel").forEach(panel => {
+  document.querySelectorAll(".view-panel").forEach((panel) => {
     if (panel.id === `${tabName}-view`) {
       panel.classList.add("active");
     } else {
@@ -325,17 +371,20 @@ function switchTab(tabName) {
 async function fetchDashboardStats() {
   try {
     const response = await fetch(`${API_BASE}/api/dashboard/stats`, {
-      headers: { "Authorization": `Bearer ${state.token}` }
+      headers: { Authorization: `Bearer ${state.token}` },
     });
     if (!response.ok) throw new Error();
     const stats = await response.json();
     state.dashboardStats = stats;
-    
+
     // Render stats
     document.getElementById("stat-scans").textContent = stats.total_scans;
-    document.getElementById("stat-score").textContent = `${stats.average_score}/100`;
-    document.getElementById("stat-vulns").textContent = stats.total_vulnerabilities;
-    document.getElementById("stat-criticals").textContent = stats.critical_issues;
+    document.getElementById("stat-score").textContent =
+      `${stats.average_score}/100`;
+    document.getElementById("stat-vulns").textContent =
+      stats.total_vulnerabilities;
+    document.getElementById("stat-criticals").textContent =
+      stats.critical_issues;
 
     renderSeverityChart(stats.severity_distribution);
     renderRecentScans(stats.recent_scans);
@@ -350,15 +399,23 @@ function renderSeverityChart(distribution) {
   container.innerHTML = "";
 
   const items = [
-    { label: "Critical", value: distribution.critical, color: "var(--color-critical)" },
+    {
+      label: "Critical",
+      value: distribution.critical,
+      color: "var(--color-critical)",
+    },
     { label: "High", value: distribution.high, color: "var(--color-high)" },
-    { label: "Medium", value: distribution.medium, color: "var(--color-medium)" },
-    { label: "Low", value: distribution.low, color: "var(--color-low)" }
+    {
+      label: "Medium",
+      value: distribution.medium,
+      color: "var(--color-medium)",
+    },
+    { label: "Low", value: distribution.low, color: "var(--color-low)" },
   ];
 
-  const maxVal = Math.max(...items.map(i => i.value), 1);
+  const maxVal = Math.max(...items.map((i) => i.value), 1);
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const heightPercent = Math.min((item.value / maxVal) * 100, 100);
     const col = document.createElement("div");
     col.style.display = "flex";
@@ -386,7 +443,7 @@ function renderRecentScans(scans) {
     return;
   }
 
-  scans.forEach(scan => {
+  scans.forEach((scan) => {
     const entry = document.createElement("div");
     entry.style.display = "flex";
     entry.style.alignItems = "center";
@@ -397,7 +454,7 @@ function renderRecentScans(scans) {
     entry.style.borderRadius = "12px";
 
     const badgeClass = scan.scan_type === "web" ? "badge-info" : "badge-medium";
-    
+
     entry.innerHTML = `
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <span class="badge ${badgeClass}">${scan.scan_type}</span>
@@ -422,7 +479,7 @@ async function handleWebScan(e) {
   e.preventDefault();
   const urlInput = document.getElementById("web-scan-url").value;
   const depth = document.getElementById("web-scan-depth").value;
-  
+
   const loading = document.getElementById("web-scan-loading");
   const resultsDiv = document.getElementById("web-scan-results");
   const form = document.getElementById("web-scan-form");
@@ -441,9 +498,9 @@ async function handleWebScan(e) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${state.token}`
+        Authorization: `Bearer ${state.token}`,
       },
-      body: JSON.stringify({ url: targetUrl, scan_depth: depth })
+      body: JSON.stringify({ url: targetUrl, scan_depth: depth }),
     });
 
     const data = await response.json();
@@ -483,9 +540,9 @@ async function handleAPKScan(e) {
     const response = await fetch(`${API_BASE}/api/scans/apk`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${state.token}`
+        Authorization: `Bearer ${state.token}`,
       },
-      body: formData
+      body: formData,
     });
 
     const data = await response.json();
@@ -527,7 +584,12 @@ function renderScanResult(type, result) {
     </div>
   `;
 
-  const severityClass = result.security_score >= 80 ? 'badge-low' : result.security_score >= 55 ? 'badge-medium' : 'badge-critical';
+  const severityClass =
+    result.security_score >= 80
+      ? "badge-low"
+      : result.security_score >= 55
+        ? "badge-medium"
+        : "badge-critical";
 
   let html = `
     <!-- Top Summary Banner -->
@@ -557,13 +619,17 @@ function renderScanResult(type, result) {
     `;
   } else {
     html += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
-    result.vulnerabilities.forEach(vuln => {
+    result.vulnerabilities.forEach((vuln) => {
       const vulnId = vuln.id || Math.random().toString(36).substr(2, 9);
       let severityBadge = "badge-info";
-      if (vuln.severity.toLowerCase() === "critical") severityBadge = "badge-critical";
-      else if (vuln.severity.toLowerCase() === "high") severityBadge = "badge-high";
-      else if (vuln.severity.toLowerCase() === "medium") severityBadge = "badge-medium";
-      else if (vuln.severity.toLowerCase() === "low") severityBadge = "badge-low";
+      if (vuln.severity.toLowerCase() === "critical")
+        severityBadge = "badge-critical";
+      else if (vuln.severity.toLowerCase() === "high")
+        severityBadge = "badge-high";
+      else if (vuln.severity.toLowerCase() === "medium")
+        severityBadge = "badge-medium";
+      else if (vuln.severity.toLowerCase() === "low")
+        severityBadge = "badge-low";
 
       html += `
         <div class="details-item" id="vuln-card-${vulnId}">
@@ -584,11 +650,15 @@ function renderScanResult(type, result) {
                 <strong style="color:var(--color-text-primary); display:block; margin-bottom:0.25rem;">Impact:</strong>
                 <p style="color:var(--color-text-secondary);">${vuln.impact || "N/A"}</p>
               </div>
-              ${vuln.evidence ? `
+              ${
+                vuln.evidence
+                  ? `
               <div>
                 <strong style="color:var(--color-text-primary); display:block; margin-bottom:0.25rem;">Evidence:</strong>
                 <pre style="background:var(--color-bg-elevated); padding:0.75rem; border-radius:8px; font-family:var(--font-mono); font-size:0.75rem; overflow-x:auto; color:var(--color-accent-light);">${vuln.evidence}</pre>
-              </div>` : ''}
+              </div>`
+                  : ""
+              }
               <div>
                 <strong style="color:#10b981; display:block; margin-bottom:0.25rem;">Remediation Action Plan:</strong>
                 <p style="color:var(--color-text-secondary); white-space: pre-line; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); padding: 0.75rem; border-radius: 8px;">${vuln.remediation || "N/A"}</p>
@@ -606,7 +676,7 @@ function renderScanResult(type, result) {
 }
 
 // Toggle findings details item card expansion
-window.toggleDetailsCard = function(vulnId) {
+window.toggleDetailsCard = function (vulnId) {
   const card = document.getElementById(`vuln-card-${vulnId}`);
   const body = document.getElementById(`vuln-body-${vulnId}`);
   if (card.classList.contains("expanded")) {
@@ -619,14 +689,16 @@ window.toggleDetailsCard = function(vulnId) {
 };
 
 // Initiate PDF compile trigger
-window.compilePDFReport = async function(scanId) {
+window.compilePDFReport = async function (scanId) {
   try {
     const response = await fetch(`${API_BASE}/api/reports/generate/${scanId}`, {
       method: "POST",
-      headers: { "Authorization": `Bearer ${state.token}` }
+      headers: { Authorization: `Bearer ${state.token}` },
     });
     if (!response.ok) throw new Error();
-    alert("Compliance PDF Report successfully compiled! Navigate to the Security Reports section to download.");
+    alert(
+      "Compliance PDF Report successfully compiled! Navigate to the Security Reports section to download.",
+    );
   } catch (err) {
     alert("Report generation failed.");
   }
@@ -639,7 +711,7 @@ async function fetchReports() {
 
   try {
     const response = await fetch(`${API_BASE}/api/reports/`, {
-      headers: { "Authorization": `Bearer ${state.token}` }
+      headers: { Authorization: `Bearer ${state.token}` },
     });
     if (!response.ok) throw new Error();
     const reports = await response.json();
@@ -651,12 +723,12 @@ async function fetchReports() {
       return;
     }
 
-    reports.forEach(report => {
+    reports.forEach((report) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td style="font-weight: 600; color: var(--color-text-primary);">${report.title}</td>
         <td><span class="badge badge-info">${report.format}</span></td>
-        <td style="font-family:var(--font-mono); font-size:0.75rem;">${(parseInt(report.file_size)/1024).toFixed(1)} KB</td>
+        <td style="font-family:var(--font-mono); font-size:0.75rem;">${(parseInt(report.file_size) / 1024).toFixed(1)} KB</td>
         <td style="color: var(--color-text-muted);">${new Date(report.created_at).toLocaleDateString()}</td>
         <td style="text-align: right;">
           <div style="display: inline-flex; gap: 0.5rem;">
@@ -678,11 +750,14 @@ async function fetchReports() {
 }
 
 // Download PDF blob trigger
-window.downloadReport = async function(reportId, title) {
+window.downloadReport = async function (reportId, title) {
   try {
-    const response = await fetch(`${API_BASE}/api/reports/download/${reportId}`, {
-      headers: { "Authorization": `Bearer ${state.token}` }
-    });
+    const response = await fetch(
+      `${API_BASE}/api/reports/download/${reportId}`,
+      {
+        headers: { Authorization: `Bearer ${state.token}` },
+      },
+    );
     if (!response.ok) throw new Error();
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
@@ -698,11 +773,14 @@ window.downloadReport = async function(reportId, title) {
 };
 
 // Print PDF blob trigger
-window.printReport = async function(reportId) {
+window.printReport = async function (reportId) {
   try {
-    const response = await fetch(`${API_BASE}/api/reports/download/${reportId}`, {
-      headers: { "Authorization": `Bearer ${state.token}` }
-    });
+    const response = await fetch(
+      `${API_BASE}/api/reports/download/${reportId}`,
+      {
+        headers: { Authorization: `Bearer ${state.token}` },
+      },
+    );
     if (!response.ok) throw new Error();
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
@@ -727,9 +805,15 @@ async function fetchAdminConsoleData() {
 
   try {
     const [usersResp, statsResp, logsResp] = await Promise.all([
-      fetch(`${API_BASE}/api/admin/users`, { headers: { "Authorization": `Bearer ${state.token}` } }),
-      fetch(`${API_BASE}/api/admin/stats`, { headers: { "Authorization": `Bearer ${state.token}` } }),
-      fetch(`${API_BASE}/api/admin/audit-logs`, { headers: { "Authorization": `Bearer ${state.token}` } })
+      fetch(`${API_BASE}/api/admin/users`, {
+        headers: { Authorization: `Bearer ${state.token}` },
+      }),
+      fetch(`${API_BASE}/api/admin/stats`, {
+        headers: { Authorization: `Bearer ${state.token}` },
+      }),
+      fetch(`${API_BASE}/api/admin/audit-logs`, {
+        headers: { Authorization: `Bearer ${state.token}` },
+      }),
     ]);
 
     if (!usersResp.ok || !statsResp.ok || !logsResp.ok) throw new Error();
@@ -772,7 +856,7 @@ async function fetchAdminConsoleData() {
 
     // Render Users Table
     usersTable.innerHTML = "";
-    users.forEach(u => {
+    users.forEach((u) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
@@ -781,9 +865,9 @@ async function fetchAdminConsoleData() {
         </td>
         <td>
           <select class="input-field" style="padding: 0.35rem 0.5rem; width: 130px; font-size: 0.75rem; cursor: pointer;" onchange="updateUserRole('${u.id}', this.value)">
-            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Administrator</option>
-            <option value="analyst" ${u.role === 'analyst' ? 'selected' : ''}>Analyst</option>
-            <option value="user" ${u.role === 'user' ? 'selected' : ''}>User</option>
+            <option value="admin" ${u.role === "admin" ? "selected" : ""}>Administrator</option>
+            <option value="analyst" ${u.role === "analyst" ? "selected" : ""}>Analyst</option>
+            <option value="user" ${u.role === "user" ? "selected" : ""}>User</option>
           </select>
         </td>
         <td style="text-align: right;">
@@ -798,7 +882,7 @@ async function fetchAdminConsoleData() {
     if (logs.length === 0) {
       auditLogsDiv.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--color-text-muted); font-size: 0.85rem;">No audit logs stored.</div>`;
     } else {
-      logs.forEach(log => {
+      logs.forEach((log) => {
         const item = document.createElement("div");
         item.style.padding = "0.75rem";
         item.style.background = "var(--color-bg-elevated)";
@@ -827,12 +911,15 @@ async function fetchAdminConsoleData() {
 }
 
 // Update operator permissions role
-window.updateUserRole = async function(userId, role) {
+window.updateUserRole = async function (userId, role) {
   try {
-    const response = await fetch(`${API_BASE}/api/admin/users/${userId}/role?role=${role}`, {
-      method: "PUT",
-      headers: { "Authorization": `Bearer ${state.token}` }
-    });
+    const response = await fetch(
+      `${API_BASE}/api/admin/users/${userId}/role?role=${role}`,
+      {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${state.token}` },
+      },
+    );
     if (!response.ok) throw new Error();
     alert(`Operator permissions changed successfully.`);
     fetchAdminConsoleData();
@@ -842,12 +929,13 @@ window.updateUserRole = async function(userId, role) {
 };
 
 // Delete user account profile
-window.revokeOperator = async function(userId) {
-  if (!confirm("Are you sure you want to revoke this analyst's access?")) return;
+window.revokeOperator = async function (userId) {
+  if (!confirm("Are you sure you want to revoke this analyst's access?"))
+    return;
   try {
     const response = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
       method: "DELETE",
-      headers: { "Authorization": `Bearer ${state.token}` }
+      headers: { Authorization: `Bearer ${state.token}` },
     });
     if (!response.ok) throw new Error();
     alert("Analyst access successfully revoked.");
