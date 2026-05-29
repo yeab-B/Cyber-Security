@@ -10,18 +10,9 @@ Generates professional security assessment PDF reports containing:
 """
 import os
 import io
-import html
 import logging
 from datetime import datetime
 from typing import Dict, Any, List
-
-
-def _esc(val: Any) -> str:
-    """Escape text for safe usage in ReportLab HTML-like paragraphs."""
-    if val is None:
-        return ""
-    return html.escape(str(val))
-
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -174,8 +165,8 @@ class ReportGenerator:
         elements.append(HRFlowable(width="60%", thickness=2, color=BRAND_PRIMARY, spaceAfter=20))
         elements.append(Spacer(1, 0.3 * inch))
 
-        scan_type = _esc(self.scan.get("scan_type", "web").upper())
-        target = _esc(self.scan.get("target", "Unknown"))
+        scan_type = self.scan.get("scan_type", "web").upper()
+        target = self.scan.get("target", "Unknown")
         date = datetime.now().strftime("%B %d, %Y at %H:%M")
         
         elements.append(Paragraph(f"<b>Target:</b> {target}", self.styles["CoverSubtitle"]))
@@ -204,9 +195,9 @@ class ReportGenerator:
         risk_level = "Critical" if critical > 0 else ("High" if high > 0 else "Medium")
         
         summary = (
-            f"A comprehensive security assessment was performed on <b>{_esc(self.scan.get('target', 'the target'))}</b>. "
+            f"A comprehensive security assessment was performed on <b>{self.scan.get('target', 'the target')}</b>. "
             f"The assessment identified <b>{total} vulnerabilities</b> with an overall security score of "
-            f"<b>{score}/100</b>. The overall risk level is classified as <b>{_esc(risk_level)}</b>."
+            f"<b>{score}/100</b>. The overall risk level is classified as <b>{risk_level}</b>."
         )
         elements.append(Paragraph(summary, self.styles["BodyText2"]))
         elements.append(Spacer(1, 0.2 * inch))
@@ -310,25 +301,25 @@ class ReportGenerator:
             sev_color = SEVERITY_COLORS.get(sev, SEVERITY_COLORS["info"])
             
             elements.append(Paragraph(
-                f"4.{i} {_esc(vuln.get('name', 'Unknown'))}",
+                f"4.{i} {vuln.get('name', 'Unknown')}",
                 self.styles["FindingTitle"]
             ))
 
             # Severity badge
             elements.append(Paragraph(
-                f"<font color='{sev_color.hexval()}'><b>[{_esc(sev.upper())}]</b></font> — "
-                f"Category: {_esc(vuln.get('category', 'General'))}",
+                f"<font color='{sev_color.hexval()}'><b>[{sev.upper()}]</b></font> — "
+                f"Category: {vuln.get('category', 'General')}",
                 self.styles["BodyText2"]
             ))
 
             if vuln.get("description"):
-                elements.append(Paragraph(f"<b>Description:</b> {_esc(vuln['description'])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"<b>Description:</b> {vuln['description']}", self.styles["BodyText2"]))
             if vuln.get("impact"):
-                elements.append(Paragraph(f"<b>Impact:</b> {_esc(vuln['impact'])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"<b>Impact:</b> {vuln['impact']}", self.styles["BodyText2"]))
             if vuln.get("evidence"):
-                elements.append(Paragraph(f"<b>Evidence:</b> {_esc(vuln['evidence'][:200])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"<b>Evidence:</b> {vuln['evidence'][:200]}", self.styles["BodyText2"]))
             if vuln.get("remediation"):
-                elements.append(Paragraph(f"<b>Remediation:</b> {_esc(vuln['remediation'][:300])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"<b>Remediation:</b> {vuln['remediation'][:300]}", self.styles["BodyText2"]))
 
             elements.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#E5E7EB"), spaceAfter=6))
 
@@ -348,17 +339,17 @@ class ReportGenerator:
         if priorities["critical"]:
             elements.append(Paragraph("<b>🔴 Immediate Actions Required:</b>", self.styles["SubSection"]))
             for v in priorities["critical"]:
-                elements.append(Paragraph(f"• Fix: {_esc(v.get('name', ''))} — {_esc(v.get('remediation', 'See details')[:150])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"• Fix: {v.get('name', '')} — {v.get('remediation', 'See details')[:150]}", self.styles["BodyText2"]))
 
         if priorities["high"]:
             elements.append(Paragraph("<b>🟠 High Priority:</b>", self.styles["SubSection"]))
             for v in priorities["high"]:
-                elements.append(Paragraph(f"• Fix: {_esc(v.get('name', ''))} — {_esc(v.get('remediation', 'See details')[:150])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"• Fix: {v.get('name', '')} — {v.get('remediation', 'See details')[:150]}", self.styles["BodyText2"]))
 
         if priorities["medium"]:
             elements.append(Paragraph("<b>🟡 Medium Priority:</b>", self.styles["SubSection"]))
             for v in priorities["medium"]:
-                elements.append(Paragraph(f"• Fix: {_esc(v.get('name', ''))} — {_esc(v.get('remediation', 'See details')[:150])}", self.styles["BodyText2"]))
+                elements.append(Paragraph(f"• Fix: {v.get('name', '')} — {v.get('remediation', 'See details')[:150]}", self.styles["BodyText2"]))
 
         return elements
 
@@ -371,7 +362,7 @@ class ReportGenerator:
         total = self.scan.get("total_vulnerabilities", 0)
 
         elements.append(Paragraph(
-            f"The security assessment of <b>{_esc(self.scan.get('target', 'the target'))}</b> revealed "
+            f"The security assessment of <b>{self.scan.get('target', 'the target')}</b> revealed "
             f"<b>{total} vulnerability/vulnerabilities</b> with an overall security score of <b>{score}/100</b>. "
             f"It is recommended to prioritize remediation of critical and high-severity findings first, "
             f"followed by medium and low-severity issues. A follow-up assessment should be conducted "

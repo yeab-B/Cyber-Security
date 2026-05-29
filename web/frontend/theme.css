@@ -1,0 +1,135 @@
+/* theme.css - CSS variables for dark and light themes */
+:root {
+  /* Primary accent */
+  --color-primary: hsl(340, 80%, 60%);
+  --color-primary-light: hsl(340, 80%, 70%);
+  --color-primary-dark: hsl(340, 80%, 45%);
+
+  /* Backgrounds */
+  --color-bg-dark: hsl(210, 15%, 10%);
+  --color-bg-light: hsl(210, 15%, 95%);
+  --color-bg-card-dark: hsl(210, 15%, 12%);
+  --color-bg-card-light: hsl(210, 15%, 98%);
+  --color-bg-elevated-dark: hsl(210, 15%, 15%);
+  --color-bg-elevated-light: hsl(210, 15%, 97%);
+
+  /* Text colors */
+  --color-text-primary-dark: hsl(0, 0%, 95%);
+  --color-text-primary-light: hsl(0, 0%, 10%);
+  --color-text-secondary: hsl(0, 0%, 70%);
+  --color-text-muted: hsl(0, 0%, 50%);
+
+  /* Accent colors */
+  --color-accent: var(--color-primary);
+  --color-accent-light: var(--color-primary-light);
+  --color-accent-dark: var(--color-primary-dark);
+
+  /* Border colors */
+  --color-border-dark: hsl(210, 15%, 25%);
+  --color-border-light: hsl(210, 15%, 85%);
+
+  /* Misc */
+  --color-error: hsl(0, 80%, 60%);
+  --color-success: hsl(120, 70%, 55%);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Light theme overrides */
+html[data-theme='light'] {
+  --color-bg: var(--color-bg-light);
+  --color-bg-card: var(--color-bg-card-light);
+  --color-bg-elevated: var(--color-bg-elevated-light);
+  --color-text-primary: var(--color-text-primary-light);
+  --color-border: var(--color-border-light);
+}
+
+/* Dark theme defaults */
+html[data-theme='dark'], :root {
+  --color-bg: var(--color-bg-dark);
+  --color-bg-card: var(--color-bg-card-dark);
+  --color-bg-elevated: var(--color-bg-elevated-dark);
+  --color-text-primary: var(--color-text-primary-dark);
+  --color-border: var(--color-border-dark);
+}
+
+/* Global element styling */
+body {
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Glassmorphism helper */
+.glass-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Button styles */
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.btn-secondary:hover {
+  background: var(--color-bg-elevated);
+  transform: translateY(-1px);
+}
+
+/* Theme toggle button */
+.theme-btn {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+.theme-btn:hover {
+  background: var(--color-bg-elevated);
+}
+
+/* Input field styling */
+.input-field {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  transition: border-color 0.2s ease;
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}

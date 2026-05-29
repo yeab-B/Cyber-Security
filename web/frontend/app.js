@@ -1,5 +1,5 @@
 // API client configuration
-const API_BASE = "";
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") ? "http://localhost:8000" : "";
 
 // State manager
 const state = {
@@ -11,10 +11,24 @@ const state = {
   expandedFindings: {}
 };
 
+// ── Theme bootstrap (runs before first paint) ──────────────────────────────
+(function () {
+  const saved = localStorage.getItem("theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+})();
+
 // Initialization
 document.addEventListener("DOMContentLoaded", () => {
+  // Apply saved theme and sync icons
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  updateThemeIcons(savedTheme);
+
   setupEventListeners();
   initApp();
+
+  // Re-render Lucide icons after DOM is ready
+  if (window.lucide) window.lucide.createIcons();
 });
 
 // App flow routers
@@ -55,9 +69,149 @@ function showMainApp() {
   }
 }
 
+// ── Theme management ─────────────────────────────────────────────────────────
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+  updateThemeIcons(next);
+}
+
+function updateThemeIcons(theme) {
+  // Landing page icon
+  const landingIcon = document.getElementById("landing-theme-icon");
+  if (landingIcon) {
+    landingIcon.setAttribute("data-lucide", theme === "dark" ? "sun" : "moon");
+  }
+  // Dashboard navbar icon
+  const appIcon = document.getElementById("app-theme-icon");
+  if (appIcon) {
+    appIcon.setAttribute("data-lucide", theme === "dark" ? "sun" : "moon");
+  }
+  // Re-render icons after updating data-lucide attribute
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// ── Auth Modal helpers (exposed globally for inline onclick) ─────────────────
+window.showAuthModal = function (type) {
+  const modal = document.getElementById("auth-modal");
+  const loginCard  = document.getElementById("login-card");
+  const registerCard = document.getElementById("register-card");
+  if (!modal) return;
+
+  // Clear any previous errors
+  ["login-error", "register-error"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = "none"; el.textContent = ""; }
+  });
+
+  if (type === "register") {
+    loginCard.style.display  = "none";
+    registerCard.style.display = "block";
+  } else {
+    loginCard.style.display  = "block";
+    registerCard.style.display = "none";
+  }
+  modal.style.display = "flex";
+};
+
+window.hideAuthModal = function () {
+  const modal = document.getElementById("auth-modal");
+  if (modal) modal.style.display = "none";
+};
+
+// ── Google Auth simulation ────────────────────────────────────────────────────
+async function handleGoogleAuth(flow) {
+  // Simulate Google OAuth: auto-register or auto-login a demo Google user.
+  const googleUser = {
+    username: "google_user",
+    email: "demo@gmail.com",
+    password: "GoogleDemo@2025!",
+    full_name: "Google Demo User"
+  };
+
+  const btn = flow === "login"
+    ? document.getElementById("google-login-btn")
+    : document.getElementById("google-register-btn");
+  const errorId = flow === "login" ? "login-error" : "register-error";
+  const errorDiv = document.getElementById(errorId);
+
+  if (btn) { btn.disabled = true; btn.textContent = "Connecting…"; }
+
+  // First try to login; if 401 → register then login
+  try {
+    const tryLogin = async () => {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: googleUser.username, password: googleUser.password })
+      });
+      return res;
+    };
+
+    let res = await tryLogin();
+
+    if (res.status === 401 || res.status === 422) {
+      // Account doesn't exist yet — register first
+      const regRes = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(googleUser)
+      });
+      if (!regRes.ok) {
+        const regData = await regRes.json();
+        throw new Error(regData.detail || "Google sign-up failed");
+      }
+      res = await tryLogin();
+    }
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || "Google auth failed");
+
+    localStorage.setItem("token", data.access_token);
+    state.token = data.access_token;
+    state.user = data.user;
+
+    window.hideAuthModal();
+    showMainApp();
+    switchTab("dashboard");
+  } catch (err) {
+    if (errorDiv) {
+      errorDiv.textContent = err.message;
+      errorDiv.style.display = "block";
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" style="fill:currentColor;flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg> Continue with Google`;
+    }
+  }
+}
+
 // Global Event listeners setup
 function setupEventListeners() {
-  // Tab navigation
+  // ── Theme toggles ──────────────────────────────────────────────────────────
+  const landingToggle = document.getElementById("landing-theme-toggle");
+  if (landingToggle) landingToggle.addEventListener("click", toggleTheme);
+  const appToggle = document.getElementById("app-theme-toggle");
+  if (appToggle) appToggle.addEventListener("click", toggleTheme);
+
+  // ── Auth modal backdrop close ──────────────────────────────────────────────
+  const authModal = document.getElementById("auth-modal");
+  if (authModal) {
+    authModal.addEventListener("click", (e) => {
+      if (e.target === authModal) window.hideAuthModal();
+    });
+  }
+
+  // ── Google auth buttons ───────────────────────────────────────────────────
+  const googleLoginBtn = document.getElementById("google-login-btn");
+  if (googleLoginBtn) googleLoginBtn.addEventListener("click", () => handleGoogleAuth("login"));
+  const googleRegisterBtn = document.getElementById("google-register-btn");
+  if (googleRegisterBtn) googleRegisterBtn.addEventListener("click", () => handleGoogleAuth("register"));
+
+  // ── Tab navigation ────────────────────────────────────────────────────────
   document.querySelectorAll(".sidebar-link").forEach(link => {
     link.addEventListener("click", (e) => {
       const tabName = e.currentTarget.getAttribute("data-tab");
@@ -81,8 +235,10 @@ function setupEventListeners() {
     const errorDiv = document.getElementById("login-error");
     errorDiv.style.display = "none";
     
-    const username = document.getElementById("login-username").value;
+    const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value;
+    const submitBtn = e.target.querySelector("button[type=submit]");
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Authenticating..."; }
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
@@ -98,11 +254,14 @@ function setupEventListeners() {
       state.token = data.access_token;
       state.user = data.user;
       
+      window.hideAuthModal();
       showMainApp();
       switchTab("dashboard");
     } catch (err) {
       errorDiv.textContent = err.message;
       errorDiv.style.display = "block";
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Authenticate "; }
     }
   });
 
@@ -112,10 +271,26 @@ function setupEventListeners() {
     const errorDiv = document.getElementById("register-error");
     errorDiv.style.display = "none";
 
-    const fullName = document.getElementById("register-name").value;
-    const email = document.getElementById("register-email").value;
-    const username = document.getElementById("register-username").value;
+    const fullName = document.getElementById("register-name").value.trim();
+    const email = document.getElementById("register-email").value.trim();
+    const username = document.getElementById("register-username").value.trim();
     const password = document.getElementById("register-password").value;
+    const confirmPassword = document.getElementById("register-password-confirm").value;
+    const submitBtn = e.target.querySelector("button[type=submit]");
+
+    // Client-side validation
+    if (password !== confirmPassword) {
+      errorDiv.textContent = "Passwords do not match.";
+      errorDiv.style.display = "block";
+      return;
+    }
+    if (password.length < 8) {
+      errorDiv.textContent = "Password must be at least 8 characters.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Creating Account..."; }
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/register`, {
@@ -131,11 +306,14 @@ function setupEventListeners() {
       state.token = data.access_token;
       state.user = data.user;
 
+      window.hideAuthModal();
       showMainApp();
       switchTab("dashboard");
     } catch (err) {
       errorDiv.textContent = err.message;
       errorDiv.style.display = "block";
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Create Account"; }
     }
   });
 
@@ -145,6 +323,7 @@ function setupEventListeners() {
     state.token = null;
     state.user = null;
     showAuthScreen();
+    if (window.lucide) window.lucide.createIcons();
   });
 
   // Web scan trigger
@@ -263,7 +442,7 @@ function renderSeverityChart(distribution) {
     col.style.flex = "1";
 
     col.innerHTML = `
-      <span style="font-size: 0.8rem; font-weight: 700; color: #fff;">${item.value}</span>
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-text-primary);">${item.value}</span>
       <div style="width: 32px; height: ${Math.max(heightPercent * 1.5, 8)}px; background: ${item.color}; border-radius: 6px 6px 0 0; transition: height 0.5s ease;"></div>
       <span style="font-size: 0.7rem; color: var(--color-text-secondary);">${item.label}</span>
     `;
@@ -297,7 +476,7 @@ function renderRecentScans(scans) {
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <span class="badge ${badgeClass}">${scan.scan_type}</span>
         <div>
-          <span style="font-weight: 600; font-size: 0.85rem; color: #fff; display: block;">${scan.target}</span>
+          <span style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-primary); display: block;">${scan.target}</span>
           <span style="font-size: 0.7rem; color: var(--color-text-muted); display: block; margin-top: 0.15rem;">${new Date(scan.created_at).toLocaleString()}</span>
         </div>
       </div>
@@ -428,7 +607,7 @@ function renderScanResult(type, result) {
     <!-- Top Summary Banner -->
     <div class="glass-card" style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
       <div>
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: #fff;">${result.target}</h2>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-primary);">${result.target}</h2>
         <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">Scan duration: ${result.scan_duration}s | Score: <span class="badge ${severityClass}">${result.security_score}</span></p>
       </div>
       <div style="display: flex; gap: 0.75rem;">
@@ -446,7 +625,7 @@ function renderScanResult(type, result) {
     html += `
       <div class="glass-card" style="padding: 3rem; text-align: center; color: var(--color-text-secondary);">
         <i data-lucide="shield-check" style="width: 3rem; height: 3rem; color: #10b981; margin-bottom: 1rem;"></i>
-        <div style="font-weight: 700; color: #fff;">No Vulnerabilities Detected</div>
+        <div style="font-weight: 700; color: var(--color-text-primary);">No Vulnerabilities Detected</div>
         <p style="font-size: 0.8rem; margin-top: 0.25rem;">Configuration complies with security standard guidelines.</p>
       </div>
     `;
@@ -465,23 +644,23 @@ function renderScanResult(type, result) {
           <div class="details-header" onclick="toggleDetailsCard('${vulnId}')">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
               <span class="badge ${severityBadge}">${vuln.severity}</span>
-              <span style="font-weight: 600; font-size: 0.85rem; color: #fff;">${vuln.name}</span>
+              <span style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-primary);">${vuln.name}</span>
             </div>
             <span style="font-size: 0.75rem; color: var(--color-text-muted);">${vuln.category}</span>
           </div>
           <div class="details-body" id="vuln-body-${vulnId}">
             <div style="display: flex; flex-direction: column; gap: 1rem;">
               <div>
-                <strong style="color:#fff; display:block; margin-bottom:0.25rem;">Description:</strong>
+                <strong style="color:var(--color-text-primary); display:block; margin-bottom:0.25rem;">Description:</strong>
                 <p style="color:var(--color-text-secondary);">${vuln.description || "N/A"}</p>
               </div>
               <div>
-                <strong style="color:#fff; display:block; margin-bottom:0.25rem;">Impact:</strong>
+                <strong style="color:var(--color-text-primary); display:block; margin-bottom:0.25rem;">Impact:</strong>
                 <p style="color:var(--color-text-secondary);">${vuln.impact || "N/A"}</p>
               </div>
               ${vuln.evidence ? `
               <div>
-                <strong style="color:#fff; display:block; margin-bottom:0.25rem;">Evidence:</strong>
+                <strong style="color:var(--color-text-primary); display:block; margin-bottom:0.25rem;">Evidence:</strong>
                 <pre style="background:var(--color-bg-elevated); padding:0.75rem; border-radius:8px; font-family:var(--font-mono); font-size:0.75rem; overflow-x:auto; color:var(--color-accent-light);">${vuln.evidence}</pre>
               </div>` : ''}
               <div>
@@ -549,7 +728,7 @@ async function fetchReports() {
     reports.forEach(report => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td style="font-weight: 600; color: #fff;">${report.title}</td>
+        <td style="font-weight: 600; color: var(--color-text-primary);">${report.title}</td>
         <td><span class="badge badge-info">${report.format}</span></td>
         <td style="font-family:var(--font-mono); font-size:0.75rem;">${(parseInt(report.file_size)/1024).toFixed(1)} KB</td>
         <td style="color: var(--color-text-muted);">${new Date(report.created_at).toLocaleDateString()}</td>
@@ -671,7 +850,7 @@ async function fetchAdminConsoleData() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
-          <span style="font-weight: 600; color:#fff; display:block;">${u.username}</span>
+          <span style="font-weight: 600; color:var(--color-text-primary); display:block;">${u.username}</span>
           <span style="font-size:0.75rem; color:var(--color-text-muted);">${u.email}</span>
         </td>
         <td>

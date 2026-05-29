@@ -1,5 +1,5 @@
 """User schemas for request/response validation."""
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -27,6 +27,12 @@ class UserResponse(BaseModel):
     avatar_url: Optional[str] = None
     created_at: datetime
     last_login: Optional[datetime] = None
+
+    @field_validator("role", mode="before")
+    @classmethod
+    def coerce_role(cls, v):
+        """Ensure role is always a plain string (not an enum object)."""
+        return v.value if hasattr(v, "value") else str(v)
 
     class Config:
         from_attributes = True

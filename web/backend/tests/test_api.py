@@ -54,13 +54,6 @@ class TestSecurityPlatform(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # Close test client and dispose engine to avoid unclosed database warnings
-        try:
-            cls.client.close()
-            test_engine.dispose()
-        except Exception:
-            pass
-
         # Clean up database file after testing
         if os.path.exists(TEST_DB_FILE):
             try:

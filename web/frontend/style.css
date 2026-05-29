@@ -32,6 +32,23 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 
+html[data-theme="light"] {
+  --color-bg-primary: #f9fafb;
+  --color-bg-secondary: #f3f4f6;
+  --color-bg-card: rgba(255, 255, 255, 0.75);
+  --color-bg-elevated: rgba(243, 244, 246, 0.85);
+  
+  --color-border: rgba(99, 102, 241, 0.12);
+  --color-border-bright: rgba(99, 102, 241, 0.28);
+  --color-accent: #4f46e5;
+  --color-accent-light: #6366f1;
+  --color-accent-glow: rgba(79, 70, 229, 0.12);
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -178,10 +195,10 @@ body {
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 .brand span {
-  background: linear-gradient(135deg, #fff, var(--color-accent-light));
+  background: linear-gradient(135deg, var(--color-text-primary), var(--color-accent-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -211,7 +228,7 @@ body {
   transition: all 0.2s ease;
 }
 .sidebar-link:hover, .sidebar-link.active {
-  color: #fff;
+  color: var(--color-text-primary);
   background: var(--color-bg-card);
   border-left: 3px solid var(--color-accent);
 }
@@ -264,7 +281,7 @@ body {
 .metric-value {
   font-size: 2.25rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0.25rem 0;
 }
 

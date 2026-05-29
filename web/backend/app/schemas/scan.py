@@ -1,5 +1,5 @@
 """Scan schemas for request/response validation."""
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -31,6 +31,11 @@ class VulnerabilityResponse(BaseModel):
     priority: Optional[str] = None
     created_at: datetime
 
+    @field_validator("severity", mode="before")
+    @classmethod
+    def coerce_severity(cls, v):
+        return v.value if hasattr(v, "value") else str(v)
+
     class Config:
         from_attributes = True
 
@@ -55,6 +60,11 @@ class ScanResponse(BaseModel):
     created_at: datetime
     vulnerabilities: Optional[List[VulnerabilityResponse]] = []
 
+    @field_validator("scan_type", "status", mode="before")
+    @classmethod
+    def coerce_enum(cls, v):
+        return v.value if hasattr(v, "value") else str(v)
+
     class Config:
         from_attributes = True
 
@@ -69,6 +79,11 @@ class ScanSummary(BaseModel):
     critical_count: int
     high_count: int
     created_at: datetime
+
+    @field_validator("scan_type", "status", mode="before")
+    @classmethod
+    def coerce_enum(cls, v):
+        return v.value if hasattr(v, "value") else str(v)
 
     class Config:
         from_attributes = True
