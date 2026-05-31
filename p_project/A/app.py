@@ -1,27 +1,40 @@
 import base64
 import hashlib
 import os
+import secrets
 import sqlite3
 
 import bcrypt
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from flask import Flask, flash, redirect, render_template, request, url_for
 
 # Create Flask app object.
 app = Flask(__name__)
-# Secret key is needed for flash messages.
-app.secret_key = "beginner-friendly-password-security-demo"
+# Secret key is needed for flash messages (set FLASK_SECRET_KEY for stable production sessions).
+secret_from_env = os.getenv("FLASK_SECRET_KEY")
+if secret_from_env:
+    app.secret_key = secret_from_env
+else:
+    app.secret_key = secrets.token_urlsafe(32)
+    app.logger.warning(
+        "FLASK_SECRET_KEY is not set. A temporary secret key is being used for this run."
+    )
 
 # Define project folder and database path.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
 
 
-# This demo key is created from a fixed phrase so encryption/decryption is reproducible.
+# For persistence across restarts, define FERNET_KEY in the environment.
+# If it is missing, we derive a temporary key from the current Flask secret key.
 # In real systems, keep encryption keys in a secure secret manager.
 def get_fernet() -> Fernet:
-    key_seed = hashlib.sha256(b"password-security-analysis-demo-key").digest()
-    fernet_key = base64.urlsafe_b64encode(key_seed)
+    env_key = os.getenv("FERNET_KEY")
+    if env_key:
+        fernet_key = env_key.encode("utf-8")
+    else:
+        key_seed = hashlib.sha256(app.secret_key.encode("utf-8")).digest()
+        fernet_key = base64.urlsafe_b64encode(key_seed)
     return Fernet(fernet_key)
 
 
@@ -110,7 +123,6 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    message = None
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
@@ -124,27 +136,34 @@ def login():
         conn.close()
 
         if not user:
-            message = "Login failed: user not found."
+            flash("Login failed: user not found.", "error")
         else:
             if user["method"] == "plain":
                 valid = password == user["password_value"]
             elif user["method"] == "encrypted":
-                valid = password == decrypt_password(user["password_value"])
+                try:
+                    valid = password == decrypt_password(user["password_value"])
+                except InvalidToken:
+                    valid = False
             elif user["method"] == "hashed":
                 valid = check_password(password, user["password_value"])
             else:
                 valid = False
 
             if valid:
-                message = f"Login successful for {user['username']} (stored with {user['method']})."
+                flash(
+                    f"Login successful for {user['username']} (stored with {user['method']}).",
+                    "success",
+                )
             else:
-                message = "Login failed: incorrect password."
+                flash("Login failed: incorrect password.", "error")
 
-    return render_template("login.html", message=message)
+    return render_template("login.html")
 
 
 @app.route("/attacker")
 def attacker():
+    # This route is intentionally open to demonstrate what leaks expose in an educational lab.
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     users = conn.execute("SELECT username, password_value, method FROM users ORDER BY id").fetchall()
@@ -160,12 +179,16 @@ def attacker():
                 "attacker_result": f"Readable immediately: {user['password_value']}",
             }
         elif user["method"] == "encrypted":
-            decrypted = decrypt_password(user["password_value"])
+            try:
+                decrypted = decrypt_password(user["password_value"])
+                attacker_result = f"If key is leaked, attacker decrypts it: {decrypted}"
+            except InvalidToken:
+                attacker_result = "Encrypted value cannot be decrypted because the key is unavailable."
             attacker_view = {
                 "username": user["username"],
                 "method": "encrypted",
                 "db_value": user["password_value"],
-                "attacker_result": f"If key is leaked, attacker decrypts it: {decrypted}",
+                "attacker_result": attacker_result,
             }
         else:
             attacker_view = {
@@ -186,4 +209,5 @@ def report():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True)
+    debug_value = os.getenv("FLASK_DEBUG", "").strip().lower()
+    app.run(debug=debug_value in {"1", "true", "yes"})

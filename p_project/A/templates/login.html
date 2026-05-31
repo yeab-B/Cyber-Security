@@ -28,9 +28,13 @@
         <button type="submit">Login</button>
     </form>
 
-    {% if message %}
-        <div class="message info">{{ message }}</div>
-    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="message {{ category }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 </div>
 </body>
 </html>

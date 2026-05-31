@@ -18,7 +18,7 @@
         <a href="{{ url_for('report') }}">Report</a>
     </nav>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
         {% if messages %}
             {% for category, msg in messages %}
                 <div class="message {{ category }}">{{ msg }}</div>
