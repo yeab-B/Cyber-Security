@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Password Security Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>Password Security Analysis</h1>
+    <p>Create a user and choose how the password will be stored.</p>
+
+    <nav>
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('attacker') }}">Attacker Simulation</a>
+        <a href="{{ url_for('report') }}">Report</a>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, msg in messages %}
+                <div class="message {{ category }}">{{ msg }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="method">Storage Method</label>
+        <select id="method" name="method" required>
+            <option value="plain">Plain Text (Insecure)</option>
+            <option value="encrypted">Encrypted (Insecure if key leaks)</option>
+            <option value="hashed">Hashed + Salted with bcrypt (Secure)</option>
+        </select>
+
+        <button type="submit">Register User</button>
+    </form>
+</div>
+</body>
+</html>

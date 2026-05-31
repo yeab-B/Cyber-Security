@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attacker Simulation - Password Security Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container wide">
+    <h1>Attacker Simulation</h1>
+    <p>This page shows what an attacker sees after a database leak.</p>
+
+    <nav>
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('attacker') }}">Attacker Simulation</a>
+        <a href="{{ url_for('report') }}">Report</a>
+    </nav>
+
+    {% if leaked_data %}
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Stored Method</th>
+            <th>Value in Database</th>
+            <th>Attacker Outcome</th>
+        </tr>
+        {% for row in leaked_data %}
+        <tr>
+            <td>{{ row.username }}</td>
+            <td>{{ row.method }}</td>
+            <td><code>{{ row.db_value }}</code></td>
+            <td>{{ row.attacker_result }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p>No users registered yet. Register users first to see attacker simulation.</p>
+    {% endif %}
+</div>
+</body>
+</html>
