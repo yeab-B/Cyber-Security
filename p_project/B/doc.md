@@ -61,6 +61,15 @@ SENSITIVE_PATHS = [
 # Common folders where directory indexing is often misconfigured.
 DIRECTORY_PATHS = ["", "uploads/", "images/", "files/", "backup/"]
 
+ALLOWED_HOSTS = {
+    "localhost",
+    "127.0.0.1",
+    "::1",
+    "test-lab.local",
+    "dvwa.local",
+    "juice-shop.local",
+}
+
 
 # Only allow localhost/lab targets for ethical use.
 def is_allowed_target(url: str) -> bool:
@@ -68,11 +77,11 @@ def is_allowed_target(url: str) -> bool:
     if parsed.scheme not in {"http", "https"}:
         return False
 
-    host = (parsed.hostname or "").lower()
-    if host in {"localhost", "127.0.0.1", "::1"}:
-        return True
+    if parsed.username or parsed.password:
+        return False
 
-    return "lab" in host or host.endswith(".local")
+    host = (parsed.hostname or "").lower()
+    return host in ALLOWED_HOSTS
 
 
 # Build a normalized URL and always keep trailing slash behavior predictable.
@@ -85,6 +94,8 @@ def normalize_url(url: str) -> str:
 
 # Helper that safely makes GET requests.
 def fetch_url(url: str):
+    if not is_allowed_target(url):
+        return None
     try:
         return requests.get(url, headers=REQUEST_HEADERS, timeout=TIMEOUT, allow_redirects=True)
     except requests.RequestException:
@@ -165,7 +176,6 @@ def check_debug_exposure(base_url: str, response):
         "werkzeug debugger",
         "debug mode",
         "fatal error",
-        "line ",
     ]
 
     findings = []
@@ -249,7 +259,7 @@ def scan():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
 ```
 
 ---
@@ -288,7 +298,7 @@ if __name__ == "__main__":
         />
         <button type="submit">Start Scan</button>
       </form>
-      <p class="hint">Example: http://localhost:5001 or http://test-lab.local</p>
+      <p class="hint">Example: http://localhost:5001 or http://test-lab.local (if mapped in your hosts file)</p>
     </section>
 
     <section class="card">

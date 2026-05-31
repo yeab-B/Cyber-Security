@@ -1,5 +1,3 @@
-import ipaddress
-import socket
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -33,6 +31,15 @@ SENSITIVE_PATHS = [
 # Common folders where directory indexing is often misconfigured.
 DIRECTORY_PATHS = ["", "uploads/", "images/", "files/", "backup/"]
 
+ALLOWED_HOSTS = {
+    "localhost",
+    "127.0.0.1",
+    "::1",
+    "test-lab.local",
+    "dvwa.local",
+    "juice-shop.local",
+}
+
 
 # Only allow localhost/lab targets for ethical use.
 def is_allowed_target(url: str) -> bool:
@@ -44,24 +51,7 @@ def is_allowed_target(url: str) -> bool:
         return False
 
     host = (parsed.hostname or "").lower()
-    if host in {"localhost", "127.0.0.1", "::1"}:
-        return True
-
-    # Lab-style hostnames are allowed only when they resolve to private/local IP space.
-    if not ("lab" in host or host.endswith(".local")):
-        return False
-
-    try:
-        addr_info = socket.getaddrinfo(host, None)
-    except socket.gaierror:
-        return False
-
-    for entry in addr_info:
-        ip = ipaddress.ip_address(entry[4][0])
-        if not (ip.is_loopback or ip.is_private):
-            return False
-
-    return True
+    return host in ALLOWED_HOSTS
 
 
 # Build a normalized URL and always keep trailing slash behavior predictable.
