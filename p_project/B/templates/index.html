@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security Misconfiguration Scanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <h1>Web Security Misconfiguration Scanner</h1>
+    <p class="lead">
+      Educational scanner for <strong>localhost/lab targets only</strong>.
+      This tool checks for directory listing, exposed sensitive files,
+      missing security headers, and debug information leakage.
+    </p>
+
+    <section class="card">
+      <h2>Step 1: Enter Target URL</h2>
+      <form action="/scan" method="post">
+        <label for="target_url">Target URL</label>
+        <input
+          id="target_url"
+          name="target_url"
+          type="text"
+          placeholder="http://localhost:5001"
+          required
+        />
+        <button type="submit">Start Scan</button>
+      </form>
+      <p class="hint">Example: http://localhost:5001 or http://test-lab.local</p>
+    </section>
+
+    <section class="card">
+      <h2>How this scanner works (beginner view)</h2>
+      <ol>
+        <li><strong>Directory listing check:</strong> Looks for pages that expose file/folder indexes.</li>
+        <li><strong>Sensitive file check:</strong> Tries safe requests to common secret file paths like <code>.env</code>.</li>
+        <li><strong>Header check:</strong> Verifies important browser protection headers.</li>
+        <li><strong>Debug leakage check:</strong> Searches for stack traces and verbose error messages.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
