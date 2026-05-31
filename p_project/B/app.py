@@ -1,3 +1,5 @@
+import ipaddress
+import socket
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -38,11 +40,28 @@ def is_allowed_target(url: str) -> bool:
     if parsed.scheme not in {"http", "https"}:
         return False
 
+    if parsed.username or parsed.password:
+        return False
+
     host = (parsed.hostname or "").lower()
     if host in {"localhost", "127.0.0.1", "::1"}:
         return True
 
-    return "lab" in host or host.endswith(".local")
+    # Lab-style hostnames are allowed only when they resolve to private/local IP space.
+    if not ("lab" in host or host.endswith(".local")):
+        return False
+
+    try:
+        addr_info = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return False
+
+    for entry in addr_info:
+        ip = ipaddress.ip_address(entry[4][0])
+        if not (ip.is_loopback or ip.is_private):
+            return False
+
+    return True
 
 
 # Build a normalized URL and always keep trailing slash behavior predictable.
@@ -55,6 +74,8 @@ def normalize_url(url: str) -> str:
 
 # Helper that safely makes GET requests.
 def fetch_url(url: str):
+    if not is_allowed_target(url):
+        return None
     try:
         return requests.get(url, headers=REQUEST_HEADERS, timeout=TIMEOUT, allow_redirects=True)
     except requests.RequestException:
@@ -135,7 +156,6 @@ def check_debug_exposure(base_url: str, response):
         "werkzeug debugger",
         "debug mode",
         "fatal error",
-        "line ",
     ]
 
     findings = []
@@ -219,4 +239,4 @@ def scan():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
