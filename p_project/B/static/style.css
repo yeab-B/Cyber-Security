@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fb;
+  color: #1b2330;
+}
+
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.lead {
+  line-height: 1.5;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #d9e1ee;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.error {
+  border-color: #c62828;
+  background: #fff2f2;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  padding: 0.6rem;
+  box-sizing: border-box;
+  margin-bottom: 0.8rem;
+}
+
+button {
+  background: #0b5fff;
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #d9e1ee;
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem;
+}
+
+.status.secure {
+  color: #146c2e;
+  font-weight: 700;
+}
+
+.status.vulnerable {
+  color: #b42318;
+  font-weight: 700;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: #0e1726;
+  color: #d2e3ff;
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.hint {
+  color: #586174;
+  font-size: 0.9rem;
+}

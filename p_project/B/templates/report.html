@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan Report</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+  <main class="container">
+    <h1>Security Scan Report</h1>
+    <p class="lead">Target: <code>{{ target_url }}</code></p>
+
+    {% if error %}
+      <section class="card error">
+        <h2>Scan could not run</h2>
+        <p>{{ error }}</p>
+      </section>
+    {% else %}
+      <section class="card">
+        <h2>Step 2: Scan Results</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Check</th>
+              <th>Status</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in results %}
+            <tr>
+              <td>{{ item.name }}</td>
+              <td class="status {% if item.secure %}secure{% else %}vulnerable{% endif %}">{{ item.status }}</td>
+              <td>
+                <ul>
+                  {% for detail in item.details %}
+                  <li>{{ detail }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Step 3: Simple Security Assessment Report</h2>
+        <pre>{{ report_text }}</pre>
+      </section>
+    {% endif %}
+
+    <a class="back-link" href="/">← Run another scan</a>
+  </main>
+</body>
+</html>
