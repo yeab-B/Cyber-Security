@@ -82,13 +82,12 @@ def test_encrypted_password_invalid_token_is_handled(module_a):
         follow_redirects=True,
     )
 
-    conn = sqlite3.connect(module_a.DB_PATH)
-    conn.execute(
-        "UPDATE users SET password_value = ? WHERE username = ?",
-        ("broken-token", "dina"),
-    )
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(module_a.DB_PATH) as conn:
+        conn.execute(
+            "UPDATE users SET password_value = ? WHERE username = ?",
+            ("broken-token", "dina"),
+        )
+        conn.commit()
 
     response = client.post(
         "/login",

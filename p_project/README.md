@@ -74,7 +74,7 @@ Frontend-backend integration:
 
 1. Open terminal and go to module:
    ```bash
-   cd /tmp/workspace/yeab-B/Cyber-Security/p_project/A
+   cd p_project/A
    ```
 2. Create a virtual environment:
    ```bash
@@ -83,12 +83,17 @@ Frontend-backend integration:
    ```
 3. Install dependencies:
    ```bash
-   pip install flask bcrypt cryptography
+   pip install flask bcrypt cryptography pytest
    ```
-4. (Optional but recommended) set stable keys:
+4. (Optional but recommended) Set stable keys:
    ```bash
-   export FLASK_SECRET_KEY='change-this-secret'
-   export FERNET_KEY='replace-with-valid-fernet-key'
+   export FLASK_SECRET_KEY='YOUR_SECRET_KEY_HERE'
+   export FERNET_KEY='YOUR_FERNET_KEY_HERE'
+   ```
+   These are example placeholders only. Before deployment, replace them with strong random values.  
+   Example command to generate a valid Fernet key:
+   ```bash
+   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
    ```
 5. Start app:
    ```bash
@@ -112,7 +117,7 @@ Manual backend route checks:
 
 | Route | Input example | Expected result | Actual result |
 |---|---|---|---|
-| `POST /register` | username=alice, ****** method=plain | User inserted and success flash shown | Matched expected |
+| `POST /register` | username=alice, (password), method=plain | User inserted and success flash shown | Matched expected |
 | `POST /register` | `method=invalid` | Flash error: invalid method | Matched expected |
 | `POST /login` | Existing user + correct password | Success flash | Matched expected |
 | `POST /login` | Existing user + wrong password | Failure flash | Matched expected |
@@ -147,7 +152,7 @@ Manual frontend checks:
 Run Module A tests:
 
 ```bash
-cd /tmp/workspace/yeab-B/Cyber-Security
+cd <repository-root>
 python -m pytest p_project/A/tests -q
 ```
 
@@ -248,7 +253,7 @@ Integration:
 
 1. Open terminal and move to module:
    ```bash
-   cd /tmp/workspace/yeab-B/Cyber-Security/p_project/B
+   cd p_project/B
    ```
 2. Create and activate virtual environment:
    ```bash
@@ -257,7 +262,7 @@ Integration:
    ```
 3. Install dependencies:
    ```bash
-   pip install flask requests beautifulsoup4
+   pip install flask requests beautifulsoup4 pytest
    ```
 4. Run app:
    ```bash
@@ -265,7 +270,7 @@ Integration:
    ```
 5. Open:
    - `http://127.0.0.1:5000`
-6. Enter localhost/lab URL and click **Start Scan**.
+6. Enter localhost/lab URL and click **Start Scan**. Example accepted formats: `http://localhost:8080` or `http://test-lab.local`.
 
 # Module B Testing
 
@@ -315,7 +320,7 @@ Manual frontend checks:
 Run Module B tests:
 
 ```bash
-cd /tmp/workspace/yeab-B/Cyber-Security
+cd <repository-root>
 python -m pytest p_project/B/tests -q
 ```
 
