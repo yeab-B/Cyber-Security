@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Report - Password Security Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>Comparison Report</h1>
+    <nav>
+        <a href="{{ url_for('register') }}">Register</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('attacker') }}">Attacker Simulation</a>
+        <a href="{{ url_for('report') }}">Report</a>
+    </nav>
+
+    <h2>1) Plain Text Storage</h2>
+    <p>Passwords are saved exactly as users type them. If the database leaks, attackers can read everything instantly.</p>
+
+    <h2>2) Encrypted Storage</h2>
+    <p>Passwords are converted into unreadable text, but the server can decrypt them with a key. If attackers steal both database and key, passwords are exposed.</p>
+
+    <h2>3) Hashed + Salted Storage (bcrypt)</h2>
+    <p>Passwords are transformed one-way into hashes with a unique salt. The original password cannot be directly recovered. This is the recommended approach.</p>
+
+    <h2>Final Verdict</h2>
+    <p><strong>Best method for password storage:</strong> Hashed + Salted with bcrypt.</p>
+</div>
+</body>
+</html>
